@@ -2,12 +2,11 @@
 
 const createExample = require("../../lib/browser/example");
 
-const localVideo = document.createElement("video");
-localVideo.autoplay = true;
-localVideo.muted = true;
-
 const remoteVideo = document.createElement("video");
 remoteVideo.autoplay = true;
+
+const remoteBroadcastVideo = document.createElement("video");
+remoteBroadcastVideo.autoplay = true;
 
 async function beforeAnswer(peerConnection) {
   const localStream = await window.navigator.mediaDevices.getUserMedia({
@@ -15,7 +14,6 @@ async function beforeAnswer(peerConnection) {
     video: true
   });
 
-  localVideo.srcObject = localStream;
   localStream
     .getTracks()
     .forEach(track => peerConnection.addTrack(track, localStream));
@@ -31,8 +29,7 @@ async function beforeAnswer(peerConnection) {
   const { close } = peerConnection;
   peerConnection.close = function() {
     remoteVideo.srcObject = null;
-
-    localVideo.srcObject = null;
+    remoteBroadcastVideo.srcObject = null;
 
     localStream.getTracks().forEach(track => track.stop());
 
@@ -40,10 +37,22 @@ async function beforeAnswer(peerConnection) {
   };
 }
 
-createExample("video-compositing", "", { beforeAnswer });
+async function withBroadcast(peerConnection) {
+  const broadcasted = peerConnection
+    .getReceivers()
+    .map(receiver => receiver.track)[2];
+  const remoteBroadcastStream = new MediaStream([broadcasted]);
+  remoteBroadcastVideo.srcObject = remoteBroadcastStream;
+}
+
+createExample("send-remote-face", "", {
+  beforeAnswer,
+  withBroadcast,
+  upload: true
+});
 
 const videos = document.createElement("div");
 videos.className = "grid";
-videos.appendChild(localVideo);
 videos.appendChild(remoteVideo);
+videos.appendChild(remoteBroadcastVideo);
 document.body.appendChild(videos);

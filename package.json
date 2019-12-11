@@ -22,15 +22,15 @@
     "@tensorflow/tfjs-core": "^1.2.9",
     "@tensorflow/tfjs-node": "^1.2.9",
     "Scope": "github:kevincennis/Scope",
-    "body-parser": "^1.18.3",
+    "body-parser": "^1.19.0",
     "browserify-middleware": "^8.1.1",
     "canvas": "^2.6.0",
     "color-space": "^1.16.0",
-    "express": "^4.16.4",
+    "express": "^4.17.1",
     "face-api.js": "^0.21.0",
-    "node-fetch": "^2.3.0",
-    "uuid": "^3.3.2",
-    "wrtc": "^0.4.1"
+    "node-fetch": "^2.6.0",
+    "uuid": "^3.3.3",
+    "wrtc": "^0.4.2"
   },
   "devDependencies": {
     "eslint": "^5.15.1",

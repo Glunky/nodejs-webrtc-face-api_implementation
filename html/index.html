@@ -1,43 +1,95 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
-<head>
-<style type="text/css">
-body {
-  font-family: Courier;
-  max-width: 800px;
-  margin: 0 auto;
-  padding: 0 1em;
-}
+  <head>
+    <style type="text/css">
+      body {
+        font-family: Courier;
+        max-width: 800px;
+        margin: 0 auto;
+        padding: 0 1em;
+      }
 
-label {
-  display: block;
-  margin-top: 1em;
-}
+      label {
+        display: block;
+        margin-top: 1em;
+      }
 
-label > input {
-  margin-left: 1em;
-}
+      label > input {
+        margin-left: 1em;
+      }
 
-.grid {
-  margin-top: 1em;
-  display: grid;
-  grid-template-rows: 100%;
-  grid-template-columns: 50% 50%;
-}
+      .grid {
+        margin-top: 1em;
+        display: grid;
+        grid-template-rows: 70%;
+        grid-template-columns: 50% 50%;
+      }
 
-.grid video {
-  width: 100%;
-  margin: auto 0;
-}
+      .grid video {
+        border: 1px dashed red;
+        width: 100%;
+        margin: auto 0;
+      }
 
-.grid canvas {
-  margin: auto auto;
-  max-width: 100%;
-}
-</style>
-<meta charset="utf-8">
-<title>node-webrtc Example</title>
-<body>
-<ul>
-  <li><a href="/video-compositing/index.html">video-compositing
-<script src="index.js"></script>
+      .grid canvas {
+        margin: auto auto;
+        max-width: 100%;
+      }
+
+      .connections-list {
+        margin-top: 1em;
+        margin-bottom: 1em;
+      }
+
+      .connections-list p {
+        font-weight: bold;
+      }
+
+      .connections-list ul {
+        margin-top: 1em;
+      }
+
+      .connections-list li {
+        margin-top: 5px;
+        margin-left: 1em;
+      }
+
+      .broadcast-connection-button {
+        font-size: 100%;
+        font-family: inherit;
+        border: 0;
+        outline: none;
+        padding: 0;
+        cursor: pointer;
+        background-color: inherit;
+      }
+
+      .broadcast-connection-button:hover {
+        box-shadow: 0 1px rgba(0, 0, 0);
+      }
+
+      .broadcast-connection-button:active {
+        box-shadow: 0 1px rgba(0, 0, 0);
+        color: red;
+      }
+
+      .broadcast-connection-button:focus {
+        border: 0;
+        color: blue;
+      }
+    </style>
+    <meta charset="utf-8" />
+    <title>node-webrtc Example</title>
+    <body>
+      <ul>
+        <li>
+          <a href="/video-compositing/index.html">video-compositing </a>
+        </li>
+        <li>
+          <a href="/send-remote-face/index.html">send-remote-face </a>
+        </li>
+      </ul>
+      <script src="index.js"></script>
+    </body>
+  </head>
+</html>
