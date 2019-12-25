@@ -1,9 +1,9 @@
 "use strict";
 
- //require("@tensorflow/tfjs-node");
-const tf = require("@tensorflow/tfjs");
+// require("@tensorflow/tfjs-node");
+// const tf = require("@tensorflow/tfjs");
 const nodeFetch = require("node-fetch");
-const fapi = require("face-api.js");
+// const fapi = require("face-api.js");
 const path = require("path");
 const { createCanvas, createImageData } = require("canvas");
 const {

@@ -2,8 +2,8 @@
 
 const createExample = require("../../lib/browser/example");
 
-const remoteVideo = document.createElement("video");
-remoteVideo.autoplay = true;
+const localVideo = document.createElement("video");
+localVideo.autoplay = true;
 
 const remoteBroadcastVideo = document.createElement("video");
 remoteBroadcastVideo.autoplay = true;
@@ -18,17 +18,14 @@ async function beforeAnswer(peerConnection) {
     .getTracks()
     .forEach(track => peerConnection.addTrack(track, localStream));
 
-  const remoteStream = new MediaStream(
-    peerConnection.getReceivers().map(receiver => receiver.track)
-  );
-  remoteVideo.srcObject = remoteStream;
+  localVideo.srcObject = localStream;
 
   // NOTE(mroberts): This is a hack so that we can get a callback when the
   // RTCPeerConnection is closed. In the future, we can subscribe to
   // "connectionstatechange" events.
   const { close } = peerConnection;
   peerConnection.close = function() {
-    remoteVideo.srcObject = null;
+    localVideo.srcObject = null;
     remoteBroadcastVideo.srcObject = null;
 
     localStream.getTracks().forEach(track => track.stop());
@@ -53,6 +50,6 @@ createExample("send-remote-face", "", {
 
 const videos = document.createElement("div");
 videos.className = "grid";
-videos.appendChild(remoteVideo);
+videos.appendChild(localVideo);
 videos.appendChild(remoteBroadcastVideo);
 document.body.appendChild(videos);

@@ -1,9 +1,9 @@
 "use strict";
 
-// require("@tensorflow/tfjs-node");
-// const tf = require("@tensorflow/tfjs");
+require("@tensorflow/tfjs-node");
+const tf = require("@tensorflow/tfjs");
 const nodeFetch = require("node-fetch");
-// const fapi = require("face-api.js");
+const fapi = require("face-api.js");
 const path = require("path");
 const { createCanvas, createImageData } = require("canvas");
 const {
@@ -13,21 +13,27 @@ const {
   rgbaToI420
 } = require("wrtc").nonstandard;
 
-// fapi.env.monkeyPatch({ fetch: nodeFetch });
-// const MODELS_URL = path.join(__dirname, "/weights");
+fapi.env.monkeyPatch({ fetch: nodeFetch });
+const MODELS_URL = path.join(__dirname, "/weights");
 
 const width = 640;
 const height = 480;
 
-// Promise.all([
-//   fapi.nets.tinyFaceDetector.loadFromDisk(MODELS_URL),
-//   fapi.nets.faceLandmark68Net.loadFromDisk(MODELS_URL),
-//   fapi.nets.faceRecognitionNet.loadFromDisk(MODELS_URL),
-//   fapi.nets.faceExpressionNet.loadFromDisk(MODELS_URL)
-// ]);
+Promise.all([
+  fapi.nets.tinyFaceDetector.loadFromDisk(MODELS_URL),
+  fapi.nets.faceLandmark68Net.loadFromDisk(MODELS_URL),
+  fapi.nets.faceRecognitionNet.loadFromDisk(MODELS_URL),
+  fapi.nets.faceExpressionNet.loadFromDisk(MODELS_URL)
+]);
 
 function beforeOffer(peerConnection) {
   const source = new RTCVideoSource();
+  Object.defineProperty(this, "broadcastedSource", {
+    get() {
+      return source;
+    }
+  });
+
   const track = source.createTrack();
   const transceiver = peerConnection.addTransceiver(track);
   const sink = new RTCVideoSink(transceiver.receiver.track);
@@ -45,49 +51,46 @@ function beforeOffer(peerConnection) {
   const context = canvas.getContext("2d", { pixelFormat: "RGBA24" });
   context.fillStyle = "white";
   context.fillRect(0, 0, width, height);
-  // const emotionsArr = {
-  //   0: "neutral",
-  //   1: "happy",
-  //   2: "sad",
-  //   3: "angry",
-  //   4: "fearful",
-  //   5: "disgusted",
-  //   6: "surprised"
-  // };
-  // async function detectEmotion(lastFrameCanvas) {
-  //   const frameTensor3D = tf.browser.fromPixels(lastFrameCanvas);
-  //   const face = await fapi
-  //     .detectSingleFace(
-  //       frameTensor3D,
-  //       new fapi.TinyFaceDetectorOptions({ inputSize: 160 })
-  //     )
-  //     .withFaceExpressions();
-  //   //console.log(face);
-  //   const emo = getEmotion(face);
-  //   frameTensor3D.dispose();
-  //   return emo;
-  // }
-  // function getEmotion(face) {
-  //   try {
-  //     let mostLikelyEmotion = emotionsArr[0];
-  //     let predictionArruracy = face.expressions[emotionsArr[0]];
+  const emotionsArr = {
+    0: "neutral",
+    1: "happy",
+    2: "sad",
+    3: "angry",
+    4: "fearful",
+    5: "disgusted",
+    6: "surprised"
+  };
+  async function detectEmotion(lastFrameCanvas) {
+    const frameTensor3D = tf.browser.fromPixels(lastFrameCanvas);
+    const face = await fapi
+      .detectSingleFace(
+        frameTensor3D,
+        new fapi.TinyFaceDetectorOptions({ inputSize: 160 })
+      ).withFaceExpressions();
+    const emo = getEmotion(face);
+    frameTensor3D.dispose();
+    return emo;
+  }
+  function getEmotion(face) {
+    try {
+      let mostLikelyEmotion = emotionsArr[0];
+      let predictionArruracy = face.expressions[emotionsArr[0]];
 
-  //     for (let i = 0; i < Object.keys(face.expressions).length; i++) {
-  //       if (
-  //         face.expressions[emotionsArr[i]] > predictionArruracy &&
-  //         face.expressions[emotionsArr[i]] < 1
-  //       ) {
-  //         mostLikelyEmotion = emotionsArr[i];
-  //         predictionArruracy = face.expressions[emotionsArr[i]];
-  //       }
-  //     }
-  //     //console.log(mostLikelyEmotion);
-  //     return mostLikelyEmotion;
-  //   } catch (e) {
-  //     return "";
-  //   }
-  // }
-  // let emotion = "";
+      for (let i = 0; i < Object.keys(face.expressions).length; i++) {
+        if (
+          face.expressions[emotionsArr[i]] > predictionArruracy &&
+          face.expressions[emotionsArr[i]] < 1
+        ) {
+          mostLikelyEmotion = emotionsArr[i];
+          predictionArruracy = face.expressions[emotionsArr[i]];
+        }
+      }
+      return mostLikelyEmotion;
+    } catch (e) {
+      return "";
+    }
+  }
+  let emotion = "";
   const interval = setInterval(() => {
     if (lastFrame) {
       const lastFrameCanvas = createCanvas(lastFrame.width, lastFrame.height);
@@ -108,28 +111,28 @@ function beforeOffer(peerConnection) {
       lastFrameContext.putImageData(rgbaFrame, 0, 0);
       context.drawImage(lastFrameCanvas, 0, 0);
 
-      // detectEmotion(lastFrameCanvas).then(function(res) {
-      //   emotion = res;
-      // });
+      detectEmotion(lastFrameCanvas).then(function(res) {
+        emotion = res;
+      });
     } else {
       context.fillStyle = "rgba(255, 255, 255, 0.025)";
       context.fillRect(0, 0, width, height);
     }
 
-    // if (emotion != "") {
-    //   context.font = "60px Sans-serif";
-    //   context.strokeStyle = "black";
-    //   context.lineWidth = 1;
-    //   context.fillStyle = `rgba(${Math.round(255)}, ${Math.round(
-    //     255
-    //   )}, ${Math.round(255)}, 1)`;
-    //   context.textAlign = "center";
-    //   context.save();
-    //   context.translate(width / 2, height);
-    //   context.strokeText(emotion, 0, 0);
-    //   context.fillText(emotion, 0, 0);
-    //   context.restore();
-    // }
+    if (emotion != "") {
+      context.font = "60px Sans-serif";
+      context.strokeStyle = "black";
+      context.lineWidth = 1;
+      context.fillStyle = `rgba(${Math.round(255)}, ${Math.round(
+        255
+      )}, ${Math.round(255)}, 1)`;
+      context.textAlign = "center";
+      context.save();
+      context.translate(width / 2, height);
+      context.strokeText(emotion, 0, 0);
+      context.fillText(emotion, 0, 0);
+      context.restore();
+    }
 
     const rgbaFrame = context.getImageData(0, 0, width, height);
     const i420Frame = {
@@ -150,10 +153,14 @@ function beforeOffer(peerConnection) {
   };
 }
 
-function broadcastStream(peerConnection, stream = []) {
-  stream.forEach(track => {
-    peerConnection.addTransceiver(track);
-  });
+function broadcastStream(peerConnection, source) {
+  const track = source.createTrack();
+  peerConnection.addTransceiver(track);
+  const { close } = peerConnection;
+  peerConnection.close = function() {
+    track.stop();
+    return close.apply(this, arguments);
+  };
 }
 
 module.exports = { beforeOffer, broadcastStream };
