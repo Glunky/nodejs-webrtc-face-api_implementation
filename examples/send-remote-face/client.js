@@ -4,6 +4,7 @@ const createExample = require("../../lib/browser/example");
 
 const localVideo = document.createElement("video");
 localVideo.autoplay = true;
+localVideo.muted = true;
 
 const remoteBroadcastVideo = document.createElement("video");
 remoteBroadcastVideo.autoplay = true;
@@ -35,10 +36,11 @@ async function beforeAnswer(peerConnection) {
 }
 
 async function withBroadcast(peerConnection) {
-  const broadcasted = peerConnection
+  const remoteStream = peerConnection
     .getReceivers()
-    .map(receiver => receiver.track)[2];
-  const remoteBroadcastStream = new MediaStream([broadcasted]);
+    .map(receiver => receiver.track);
+    console.log(remoteStream);
+  const remoteBroadcastStream = new MediaStream([remoteStream[2], remoteStream[3]]);
   remoteBroadcastVideo.srcObject = remoteBroadcastStream;
 }
 

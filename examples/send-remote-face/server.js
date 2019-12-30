@@ -9,6 +9,8 @@ const { createCanvas, createImageData } = require("canvas");
 const {
   RTCVideoSink,
   RTCVideoSource,
+  RTCAudioSink,
+  RTCAudioSource,
   i420ToRgba,
   rgbaToI420
 } = require("wrtc").nonstandard;
@@ -27,24 +29,33 @@ Promise.all([
 ]);
 
 function beforeOffer(peerConnection) {
-  const source = new RTCVideoSource();
+  const videoSource = new RTCVideoSource();
+  const audioSource = new RTCAudioSource();
   Object.defineProperty(this, "broadcastedSource", {
     get() {
-      return source;
+      return videoSource;
     }
   });
 
-  const track = source.createTrack();
-  const transceiver = peerConnection.addTransceiver(track);
-  const sink = new RTCVideoSink(transceiver.receiver.track);
+  const videoTrack = videoSource.createTrack();
+  const audioTrack = audioSource.createTrack();
+  const videoTransceiver = peerConnection.addTransceiver(videoTrack);
+  const audioTransceiver = peerConnection.addTransceiver(audioTrack);
+  const videoSink = new RTCVideoSink(videoTransceiver.receiver.track);
+  const audioSink = new RTCAudioSink(audioTransceiver.receiver.track);
 
   let lastFrame = null;
+  let lastSample = null;
 
   function onFrame({ frame }) {
     lastFrame = frame;
   }
 
-  sink.addEventListener("frame", onFrame);
+  videoSink.addEventListener('frame', onFrame);
+
+  audioSink.ondata = data => {
+    lastSample = data;
+  };
 
   // TODO(mroberts): Is pixelFormat really necessary?
   const canvas = createCanvas(width, height);
@@ -119,6 +130,10 @@ function beforeOffer(peerConnection) {
       context.fillRect(0, 0, width, height);
     }
 
+    if (lastSample) {
+      audioSource.onData(lastSample);
+    }
+
     if (emotion != "") {
       context.font = "60px Sans-serif";
       context.strokeStyle = "black";
@@ -141,21 +156,22 @@ function beforeOffer(peerConnection) {
       data: new Uint8ClampedArray(1.5 * width * height)
     };
     rgbaToI420(rgbaFrame, i420Frame);
-    source.onFrame(i420Frame);
+    videoSource.onFrame(i420Frame);
   });
 
   const { close } = peerConnection;
   peerConnection.close = function() {
     clearInterval(interval);
-    sink.stop();
-    track.stop();
+    videoSink.stop();
+    videoTrack.stop();
     return close.apply(this, arguments);
   };
 }
 
-function broadcastStream(peerConnection, source) {
-  const track = source.createTrack();
+function broadcastStream(peerConnection, broadcasted) {
+  const track = broadcasted.broadcastedSource.createTrack();
   peerConnection.addTransceiver(track);
+  peerConnection.addTransceiver(broadcasted.stream[1]);
   const { close } = peerConnection;
   peerConnection.close = function() {
     track.stop();
