@@ -2,7 +2,6 @@
 
 const path = require("path");
 
-
 const {loadModels, detectEmotion, drawEmotion} = require("./emotion-api") // подключаем api
 const MODELS_URL = path.join(__dirname, "/weights"); // указываем путь к моделям
 

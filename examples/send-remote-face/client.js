@@ -2,6 +2,43 @@
 
 const createExample = require("../../lib/browser/example");
 
+function setCookie(name, value, options = {}) {
+
+  options = {
+    path: '/',
+    // при необходимости добавьте другие значения по умолчанию
+    ...options
+  };
+
+  let updatedCookie = encodeURIComponent(name) + "=" + encodeURIComponent(value);
+
+  for (let optionKey in options) {
+    updatedCookie += "; " + optionKey;
+    let optionValue = options[optionKey];
+    if (optionValue !== true) {
+      updatedCookie += "=" + optionValue;
+    }
+  }
+
+  document.cookie = updatedCookie;
+}
+
+function deleteCookie(name) {
+  setCookie(name, "", {
+    'max-age': -1
+  })
+}
+
+const logoutBtn = document.createElement('button');
+logoutBtn.innerHTML = "logout";
+logoutBtn.onclick = () => {
+  deleteCookie('userHash');
+  var urlParts = location.href.split("/");
+  location.href = urlParts[0] + "//" + urlParts[2];
+}
+document.body.appendChild(logoutBtn);
+
+
 const localVideo = document.createElement("video");
 localVideo.autoplay = true;
 localVideo.muted = true;
